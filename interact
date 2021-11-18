@@ -1,0 +1,114 @@
+#!/bin/bash
+
+########################################
+# default values
+########################################
+
+CPUSPERTASK="--cpus-per-task=1"
+JOBNAME="--job-name=interact"
+NTASKS="--ntasks=1"
+NODES="--nodes=1"
+PARTITION="--partition=inter_p"
+QOS=""
+TIME="--time=12:00:00"
+NODELIST=""
+CONSTRAINT=""
+GRES=""
+MEM="--mem=2GB"
+SHELL=`getent passwd $USER | awk -F: '{print $NF}'`
+WCKEY=""
+X11=""
+
+########################################
+# help output
+########################################
+
+function print_usage {
+cat <<EOF
+
+Usage: interact [OPTIONS]
+
+Description: Start an interactive job
+
+    -c, --cpus-per-task         CPU cores per task (default: 1)
+    -J, --job-name              Job name (default: interact)
+    -n, --ntasks                Number of tasks (default: 1)
+    -N, --nodes                 Number of nodes (default: 1)
+    -p, --partition             Partition for interactive job (default: inter_p)
+    -q, --qos                   Request a quality of service for the job.
+    -t, --time                  Maximum run time for interactive job (default: 12:00:00)
+    -w, --nodelist              List of node name(s) on which your job should run
+    --constraint                Job constraints
+    --gres                      Generic consumable resources
+    --mem                   Memory per node (default 2GB)
+    --shell                     Absolute path to the shell to be used in your interactive job (default: /bin/bash)
+    --wckey                     Wckey to be used with job
+    --x11                       Start an interactive job with X Forwarding
+    -h, --help                  Display this help output
+
+EOF
+exit 2
+}
+
+########################################
+# arg parsing
+########################################
+
+PARSED_ARGUMENTS=$(getopt -a -n interact -o c:J:n:N:p:q:t:w:h \
+--long cpus-per-task:,job-name:,ntasks:,nodes:,partition:,qos:,time:,constraint:,gres:,mem:,shell:,wckey:,x11,help -- "$@")
+
+# if return code of arg is not 0, print help output
+VALID_ARGUMENTS=$?
+if [ "$VALID_ARGUMENTS" != "0" ]; then
+  print_usage
+fi
+
+eval set -- "$PARSED_ARGUMENTS"
+while :
+do
+  case "$1" in
+    -c | --cpus-per-task)   CPUSPERTASK="--cpus-per-task=$2"    ; shift 2 ;;
+    -J | --job-name)        JOBNAME="--job-name=$2"             ; shift 2 ;;
+    -n | --ntasks)          NTASKS="--ntasks=$2"                ; shift 2 ;;
+    -N | --nodes)           NODES="--nodes=$2"                  ; shift 2 ;;
+    -p | --partition)       PARTITION="--partition=$2"          ; shift 2 ;;
+    -q | --qos)             QOS="--qos=$2"                      ; shift 2 ;;
+    -t | --time)            TIME="--time=$2"                    ; shift 2 ;;
+    -w | --nodelist)        NODELIST="--nodelist=$2"            ; shift 2 ;;
+    --constraint)           CONSTRAINT="--constraint=$2"        ; shift 2 ;;
+    --gres)                 GRES="--gres=$2"                    ; shift 2 ;;
+    --mem)                  MEM="--mem=$2"                      ; shift 2 ;;
+    --shell)                SHELL="$2"                          ; shift 2 ;;
+    --wckey)                WCKEY="--wckey=$2"                  ; shift 2 ;;
+    --x11)                  X11="--x11"                         ; shift   ;;
+    -h | --help)            print_usage                         ;;
+    # -- means the end of the arguments; drop this, and break out of the while loop
+    --) shift; break ;;
+    # If invalid options were passed, then getopt should have reported an error,
+    # which we checked as VALID_ARGUMENTS when getopt was called...
+    *) echo "Unexpected option: $1 - this should not happen."
+       print_usage ;;
+  esac
+done
+
+########################################
+# build srun options
+########################################
+
+
+VARS=($CPUSPERTASK $JOBNAME $NTASKS $NODES $PARTITION $QOS $TIME $NODELIST $CONSTRAINT $GRES $MEM $WCKEY $X11)
+OPTIONS=""
+
+# loop through all the vars, add to options if value is not ""
+for var in ${VARS[@]};do
+    if [ $var != "" ]; then
+        OPTIONS="$OPTIONS $var"
+    fi
+done
+
+# declare/define command to be ran
+CMD="srun --pty $OPTIONS $SHELL -l"
+# echo out command to be ran
+echo -e "\n$CMD\n"
+# run command
+$CMD
