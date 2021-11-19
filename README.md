@@ -16,11 +16,19 @@ To start a job using the default values, but with 4 cores:
 ```
 interact --cpus-per-task 4
 ```
+Will execute:
+```
+srun --pty  --cpus-per-task=4 --job-name=interact --ntasks=1 --nodes=1 --partition=inter_p --time=12:00:00 --mem=2GB /bin/bash -l
+```
+<br>
 
 To start an interactive job with the default values, but with 100gb of memory, using /bin/zsh, and a job name of "test-job"
-
 ```
 interact --mem 100gb --shell /bin/zsh --job-name test-job
+```
+Will execute:
+```
+srun --pty  --cpus-per-task=1 --job-name=test-job --ntasks=1 --nodes=1 --partition=inter_p --time=12:00:00 --mem=100GB /bin/zsh -l
 ```
 
 ### Help Output
