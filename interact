@@ -55,7 +55,7 @@ exit 2
 ########################################
 
 PARSED_ARGUMENTS=$(getopt -a -n interact -o c:J:n:N:p:q:t:w:h \
---long cpus-per-task:,job-name:,ntasks:,nodes:,partition:,qos:,time:,constraint:,gres:,mem:,shell:,wckey:,x11,help -- "$@")
+--long cpus-per-task:,job-name:,ntasks:,nodes:,partition:,qos:,time:,nodelist:,constraint:,gres:,mem:,shell:,wckey:,x11,help -- "$@")
 
 # if return code of arg is not 0, print help output
 VALID_ARGUMENTS=$?
